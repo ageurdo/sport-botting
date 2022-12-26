@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 (async () => {
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
 
     const page = await browser.newPage();
     await page.setViewport({
@@ -15,30 +15,39 @@ dotenv.config();
     await page.setUserAgent('UA-TEST');
     page.setDefaultNavigationTimeout(90000);
 
-    await page.goto('https://www.sportingbet.com/en/labelhost/login');
+    // await page.goto('https://www.sportingbet.com/en/labelhost/login');
+    // await page.waitForNavigation();
+
+    // Login
+
+    // let emailInput = await page.waitForSelector('#userId');
+    // await emailInput?.type(`${process.env.EMAIL}`);
+
+    // let passwordInput = await page.waitForSelector('[type="password"]');
+    // await passwordInput?.type(`${process.env.PASS}`);
+
+    // let buttonLogIn = await page.waitForSelector('button');
+    // await buttonLogIn?.click();
+
+    // #Fim Login
+    await page.goto('https://sports.sportingbet.com/pt-br/sports/futebol-4');
     await page.waitForNavigation();
 
-    let emailInput = await page.waitForSelector('#userId');
-    await emailInput?.type(`${process.env.EMAIL}`);
+    console.log("Antes do WaitForSelector");
+    await page.waitForSelector('.grid-event.ms-active-highlight > div');
 
-    let passwordInput = await page.waitForSelector('[type="password"]');
-    await passwordInput?.type(`${process.env.PASS}`);
+    let listaDeJogos = await page.$$('.grid-event.ms-active-highlight > div');
 
-    let buttonLogIn = await page.waitForSelector('button');
-    await buttonLogIn?.click();
-
-    let futebol = await page.waitForSelector('[href="/pt-br/sports/ao-vivo/futebol-americano-11"]', { timeout: 0 });
-    await futebol?.click();
-
-    let listaDeJogos = await page.waitForSelector('.grid-six-pack-event', { timeout: 0 });
-    await futebol?.click();
-
-    await page.evaluate(() => {
-        console.log('teste', document.querySelectorAll('.grid-six-pack-event'));
+    listaDeJogos.map(async (e: ElementHandle<HTMLDivElement>, i) => {
+        const innerText = await (await e.getProperty('innerText')).jsonValue();
+        console.log(`Item[${i}]:`, innerText);
     });
 
-    console.log({ listaDeJogos });
+    //#region 
+    // console.log('Quantidade de selecionados || ', listaDeJogos?.length);
+    // console.log(`Array || ${listaDeJogos.length}`, listaDeJogos);
+    //#endregion
 
-    await page.screenshot({ path: 'example.png' });
+    // await page.screenshot({ path: 'example.png' });
     // await browser.close();
 })();
